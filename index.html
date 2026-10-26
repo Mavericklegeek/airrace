@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>AIR RACE — course aérienne multijoueur</title>
+<meta name="description" content="Course aérienne multijoueur en ligne : 8 pilotes, anneaux, cockpit cliquable, manette et joystick.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text y='52' font-size='52'>✈️</text></svg>">
+<style>
+:root{--bg:#070b14;--card:rgba(10,16,30,.78);--line:rgba(255,255,255,.12);--txt:#eaf1ff;--dim:#8fa3c4;--acc:#19e0ff;--acc2:#ffb020;--bad:#ff5470;--ok:#37e29a}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#000;color:var(--txt);touch-action:manipulation;overscroll-behavior:none;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;user-select:none}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none}
+.hide{display:none!important}
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at center,rgba(5,10,24,.15),rgba(5,10,24,.65));overflow:auto;z-index:20}
+#hangar.screen{justify-content:flex-start}
+.card{background:var(--card);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:18px;padding:22px;width:min(420px,100%);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.card.wide{width:min(760px,100%)}.card.side{width:min(430px,100%);max-height:calc(100vh - 32px);overflow:auto}
+h1{margin:0;font-size:46px;letter-spacing:.12em;font-weight:900;font-style:italic}h1 span{color:var(--acc);text-shadow:0 0 24px var(--acc)}
+h2{margin:0 0 10px;font-size:22px}h3{margin:16px 0 8px;font-size:13px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
+.sub{margin:2px 0 14px;color:var(--dim)}
+button,select,input{font:inherit;color:var(--txt)}
+button{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:12px;padding:11px 14px;cursor:pointer;transition:.15s;width:100%}
+button:hover{background:rgba(255,255,255,.16);transform:translateY(-1px)}button:disabled{opacity:.4;pointer-events:none}
+button.pri{background:linear-gradient(135deg,#0aa7d8,#19e0ff);color:#00212b;font-weight:800;border:0;font-size:17px;padding:14px}
+button.pri:hover{filter:brightness(1.1)}
+button.sm{width:auto;padding:6px 10px;font-size:13px;border-radius:9px}
+input,select{background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;user-select:text}
+label{display:block;color:var(--dim);font-size:13px;margin:8px 0}
+.row{display:flex;gap:8px;margin-top:10px;align-items:center}.row>*{flex:1}
+.prof{display:flex;gap:10px;align-items:center;margin:10px 0;padding:10px;border-radius:12px;background:rgba(255,255,255,.05)}
+.lvl{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:900;background:conic-gradient(var(--acc) var(--p,0%),rgba(255,255,255,.12) 0);position:relative;flex:none}
+.lvl b{position:absolute;inset:4px;border-radius:50%;background:#0a1020;display:grid;place-items:center}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.1);font-size:12px;color:var(--dim)}
+.pill.bot{color:#c9b6ff}.pill.me{color:var(--acc)}.pill.host{color:var(--acc2)}.pill.ok{color:var(--ok)}
+table{width:100%;border-collapse:collapse}td,th{padding:7px 8px;text-align:left;border-bottom:1px solid var(--line);font-size:14px}th{color:var(--dim);font-weight:600;font-size:12px;text-transform:uppercase}
+tr.me td{background:rgba(25,224,255,.12)}td.n{font-variant-numeric:tabular-nums}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.tabs button{width:auto;padding:7px 12px;font-size:13px}.tabs button.on{background:var(--acc);color:#00212b;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.tile{border:1px solid var(--line);border-radius:12px;padding:9px;cursor:pointer;background:rgba(255,255,255,.05);position:relative;transition:.15s}
+.tile:hover{background:rgba(255,255,255,.12)}.tile.sel{border-color:var(--acc);box-shadow:0 0 0 2px rgba(25,224,255,.35) inset}.tile.lock{opacity:.5;cursor:not-allowed}
+.sw{height:34px;border-radius:8px;margin-bottom:6px}
+.plane{display:block;margin-bottom:8px}.plane .nm{font-weight:700}.plane .ds{color:var(--dim);font-size:12px;margin:2px 0 6px}
+.bar{height:6px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden;margin:3px 0}.bar i{display:block;height:100%;background:linear-gradient(90deg,#0aa7d8,#19e0ff);border-radius:3px}
+.stat{display:flex;gap:8px;align-items:center;font-size:11px;color:var(--dim)}.stat span{width:62px}.stat .bar{flex:1}
+.close{position:absolute;top:10px;right:12px;width:auto;padding:4px 10px}
+.card{position:relative}
+kbd{background:rgba(255,255,255,.12);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px}
+.axes{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin:8px 0}.ax{font-size:11px;color:var(--dim)}.ax .bar{height:8px}
+.ax .bar i{width:50%;transform-origin:left;background:var(--acc2)}
+.map{display:grid;grid-template-columns:1fr auto auto;gap:6px 8px;align-items:center;font-size:13px}.map code{color:var(--acc);min-width:70px;display:inline-block;text-align:center}
+.map input[type=checkbox]{width:auto}
+/* HUD */
+#hud{position:fixed;inset:0;pointer-events:none;z-index:10;font-variant-numeric:tabular-nums;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+#hudL{position:absolute;left:22px;bottom:22px;width:190px}
+#hudL .big{font-size:54px;font-weight:900;line-height:1;font-style:italic}#hudL small{color:var(--dim);margin-left:4px}
+#hudL .bar{height:7px;margin:6px 0}#thrBar{background:#4af}#enBar{background:var(--acc2)}
+#hudT{position:absolute;top:16px;left:50%;transform:translateX(-50%);text-align:center}
+#tm{font-size:34px;font-weight:800}#rg{color:var(--acc);font-weight:700;letter-spacing:.08em}
+#rank{position:absolute;right:16px;top:16px;min-width:190px;font-size:13px}
+#rank div{display:flex;gap:6px;padding:3px 8px;margin-bottom:2px;border-radius:6px;background:rgba(5,10,24,.55)}
+#rank .me{background:rgba(25,224,255,.35);font-weight:700}#rank b{width:16px}#rank span{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}#rank i{color:var(--dim);font-style:normal}
+#wp{position:absolute;width:64px;height:64px;margin:-32px 0 0 -32px;border:3px solid var(--acc);border-radius:50%;box-shadow:0 0 16px var(--acc),inset 0 0 16px rgba(25,224,255,.4);display:grid;place-items:center;font-size:12px;font-weight:700;text-shadow:none}
+#arrow{position:absolute;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-bottom:30px solid var(--acc);margin:-15px 0 0 -14px;filter:drop-shadow(0 0 8px var(--acc))}
+#msg{position:absolute;top:26%;width:100%;text-align:center;font-size:32px;font-weight:900;font-style:italic;letter-spacing:.06em;color:#fff;opacity:0;transition:opacity .3s}
+#msg.on{opacity:1}
+#cd{position:fixed;inset:0;display:grid;place-items:center;font-size:min(34vw,300px);font-weight:900;font-style:italic;color:#fff;text-shadow:0 0 40px var(--acc);pointer-events:none;z-index:11;opacity:0}
+#cd.pop{animation:pop 1s ease-out}@keyframes pop{0%{opacity:1;transform:scale(1.5)}100%{opacity:0;transform:scale(.8)}}
+#tags div{position:absolute;transform:translate(-50%,-100%);font-size:12px;padding:1px 6px;border-radius:5px;background:rgba(5,10,24,.6);white-space:nowrap;text-shadow:none}
+#toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:rgba(8,12,24,.92);border:1px solid var(--line);padding:10px 18px;border-radius:12px;z-index:50;opacity:0;transition:.3s;pointer-events:none}
+#toast.on{opacity:1}
+.spin{width:44px;height:44px;border-radius:50%;border:4px solid rgba(255,255,255,.2);border-top-color:var(--acc);animation:sp 1s linear infinite;margin:0 auto 12px}@keyframes sp{to{transform:rotate(360deg)}}
+#loading{background:#050a16;z-index:40;flex-direction:column;text-align:center}
+.unl{padding:8px 10px;border-radius:10px;background:rgba(255,176,32,.14);border:1px solid rgba(255,176,32,.4);margin-top:8px}
+.help{color:var(--dim);font-size:12px;margin-top:10px}
+
+/* ---- version téléphone : commandes tactiles */
+#touch{position:fixed;inset:0;z-index:12;pointer-events:none;touch-action:none;-webkit-user-select:none}
+#touch>*{pointer-events:auto;touch-action:none}
+.t-stick{position:absolute;left:max(3vw,env(safe-area-inset-left));bottom:max(5vh,env(safe-area-inset-bottom));width:210px;height:210px;display:grid;place-items:center}
+.t-base{width:150px;height:150px;border-radius:50%;border:2px solid rgba(255,255,255,.35);background:radial-gradient(circle,rgba(255,255,255,.14),rgba(255,255,255,.04));display:grid;place-items:center}
+.t-knob{width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7fe9ff,#0a8fb8);box-shadow:0 4px 14px rgba(0,0,0,.5);transition:transform .05s}
+.t-stick span,.t-thr span{position:absolute;bottom:-4px;font-size:11px;color:var(--dim);letter-spacing:.1em;text-shadow:0 1px 4px #000}
+.t-thr{position:absolute;right:max(3vw,env(safe-area-inset-right));bottom:max(5vh,env(safe-area-inset-bottom));width:96px;height:230px;display:flex;justify-content:center}
+.t-track{position:relative;width:46px;height:200px;border-radius:23px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);overflow:visible;margin-bottom:22px}
+.t-fill{position:absolute;left:0;right:0;bottom:0;border-radius:0 0 21px 21px;background:linear-gradient(0deg,#0a8fb8,#19e0ff);opacity:.55}
+.t-tknob{position:absolute;left:-9px;width:60px;height:36px;border-radius:12px;background:linear-gradient(#e44,#a11);border:2px solid #fff3;box-shadow:0 3px 10px #0008}
+.t-btn{background:rgba(10,16,30,.6);border:2px solid rgba(255,255,255,.35);color:#fff;border-radius:50%;width:auto;padding:0;backdrop-filter:blur(6px)}
+.t-btn.sm{width:48px;height:48px;border-radius:14px;font-size:14px;font-weight:700}.t-btn.on{background:rgba(25,224,255,.5);border-color:var(--acc)}
+.t-boost{position:absolute;right:calc(max(3vw,env(safe-area-inset-right)) + 110px);bottom:max(7vh,env(safe-area-inset-bottom));width:92px;height:92px;font-weight:900;font-size:15px;background:rgba(220,40,40,.45);border-color:#ff8a8a}
+.t-boost.on{background:rgba(255,120,30,.85);box-shadow:0 0 26px #ff7a1a}
+.t-top{position:absolute;top:12px;right:calc(max(2vw,env(safe-area-inset-right)));display:flex;gap:8px;margin-top:110px}
+#plat button{padding:10px 8px;font-size:14px}#plat button.on{background:var(--acc);color:#00212b;font-weight:800;border-color:transparent}
+body.phone #hudL{left:50%;transform:translateX(-50%);bottom:auto;top:62px;width:auto;text-align:center}
+body.phone #hudL .big{font-size:30px}body.phone #hudL .bar,body.phone #hudL div:last-child{display:none}
+body.phone #rank{top:10px;right:10px;min-width:0;font-size:11px;max-width:150px;display:block}
+body.phone #hudT{top:6px}body.phone #tm{font-size:24px}body.phone #msg{font-size:24px}
+body.phone .screen{padding:8px}body.phone .card{padding:14px;max-height:calc(100vh - 16px);overflow:auto}body.phone h1{font-size:34px}
+body.phone .card.main-menu .sub{margin-bottom:6px}
+body.phone #tags div{font-size:10px}
+@media (max-height:520px){.t-stick{transform:scale(.8);transform-origin:left bottom}.t-thr{transform:scale(.8);transform-origin:right bottom}.t-boost{transform:scale(.85);transform-origin:right bottom}}
+
+@media(max-width:700px){h1{font-size:34px}}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<canvas id="gl" tabindex="0"></canvas>
+
+<div id="hud" class="hide">
+  <div id="hudL"><div><span class="big" id="spd">0</span><small>km/h</small></div><div id="alt" style="color:var(--dim)">ALT 0 m</div>
+    <div class="bar"><i id="thrBar" style="width:80%"></i></div><div class="bar"><i id="enBar" style="width:100%"></i></div>
+    <div style="font-size:11px;color:var(--dim)">GAZ · BOOST (Espace)</div></div>
+  <div id="hudT"><div id="tm">0:00.0</div><div id="rg"></div></div>
+  <div id="rank"></div>
+  <div id="wp" class="hide"></div><div id="arrow" class="hide"></div>
+  <div id="msg"></div>
+</div>
+<div id="tags" style="position:fixed;inset:0;pointer-events:none;z-index:9"></div>
+<div id="cd"></div>
+<div id="toast"></div>
+
+<div id="loading" class="screen"><div><div class="spin"></div><p id="loadTxt">Chargement d'AIR RACE…</p></div></div>
+
+<div id="menu" class="screen hide">
+  <div class="card">
+    <h1>AIR<span>RACE</span></h1><p class="sub">La course aérienne multijoueur · 8 pilotes</p>
+    <label>Pseudo<input id="name" maxlength="16" autocomplete="off"></label>
+    <div class="prof" id="prof"></div>
+    <div class="row" id="plat" style="margin:0 0 4px"><button data-plat="pc">🖥 Ordinateur</button><button data-plat="phone">📱 Téléphone</button></div>
+    <div class="help" id="platHelp" style="margin:0 0 10px"></div>
+    <button id="bQuick" class="pri">⚡ Course rapide</button>
+    <div class="row"><button id="bSolo">🤖 Course solo contre des bots</button></div>
+    <div class="row"><button id="bCreate">👥 Créer une course privée</button></div>
+    <div class="row"><input id="joinCode" placeholder="CODE AMI" maxlength="5" style="text-transform:uppercase"><button id="bJoin">Rejoindre</button></div>
+    <div class="row"><button id="bHangar">🛠 Hangar</button><button id="bLb">🏆 Classements</button><button id="bCtl">🎮 Réglages</button></div>
+    <div class="row"><button class="sm" id="bFull" style="flex:none">⛶ Plein écran</button><div class="help" id="online" style="margin:0"></div></div>
+  </div>
+</div>
+
+<div id="lobby" class="screen hide">
+  <div class="card wide">
+    <h2 id="lbTitle">Salon</h2>
+    <div class="row" style="margin:0 0 8px"><div id="lbTrack" style="flex:2"></div><div id="lbCodeBox" style="flex:1;text-align:right"></div></div>
+    <div id="lbPlayers"></div>
+    <div id="lbTimer" class="sub" style="margin-top:10px"></div>
+    <div class="row hide" id="lbHostRow"><select id="lbSel"></select><label style="margin:0;display:flex;gap:8px;align-items:center;flex:none"><input type="checkbox" id="lbBots" style="width:auto" checked>Compléter avec des bots</label></div>
+    <div class="row"><button id="bLeave">Quitter</button><button id="bHangar2">Hangar</button><button id="bReady">Prêt</button><button id="bStart" class="pri hide">Lancer la course</button></div>
+    <div class="help" id="lbHelp"></div>
+  </div>
+</div>
+
+<div id="hangar" class="screen hide">
+  <div class="card side">
+    <button class="close sm" data-close>✕</button>
+    <h2>Hangar</h2><div id="hgLvl" class="sub"></div>
+    <h3>Avions</h3><div id="hgPlanes"></div>
+    <h3>Peintures</h3><div class="grid" id="hgSkins"></div>
+  </div>
+</div>
+
+<div id="lb" class="screen hide">
+  <div class="card wide"><button class="close sm" data-close>✕</button>
+    <h2>Classements mondiaux</h2><div class="tabs" id="lbTabs"></div><div id="lbBody"></div></div>
+</div>
+
+<div id="ctl" class="screen hide">
+  <div class="card wide" style="max-height:calc(100vh - 32px);overflow:auto"><button class="close sm" data-close>✕</button>
+    <h2>Réglages & commandes</h2>
+    <h3>Clavier</h3>
+    <div class="help" style="font-size:13px;line-height:1.9"><kbd>↑</kbd><kbd>↓</kbd> ou <kbd>W</kbd><kbd>S</kbd> tangage · <kbd>←</kbd><kbd>→</kbd> ou <kbd>A</kbd><kbd>D</kbd> roulis · <kbd>Q</kbd><kbd>E</kbd> lacet · <kbd>Maj</kbd>/<kbd>Ctrl</kbd> gaz + / − (<kbd>Z</kbd> plein gaz, <kbd>X</kbd> ralenti) · <kbd>Espace</kbd> boost · <kbd>C</kbd> vue · <kbd>T</kbd> stabilisation · <kbd>L</kbd> feux · <kbd>H</kbd> HUD · <kbd>Échap</kbd> menu.<br>
+    <b>Cockpit :</b> clique-glisse le manche et le levier des gaz, clique les interrupteurs et le bouton BOOST ; clic droit + glisser pour regarder autour.</div>
+    <h3>Version</h3><div class="row" id="plat2" style="margin:0"><button data-plat="pc">🖥 Ordinateur</button><button data-plat="phone">📱 Téléphone</button></div><div class="help">Téléphone : pas de cockpit cliquable, vue extérieure, joystick et manette des gaz tactiles.</div>
+    <h3>Manette / joystick / HOTAS</h3>
+    <div id="padStatus" class="help" style="font-size:13px"></div>
+    <div class="axes" id="padAxes"></div>
+    <div class="map" id="padMap"></div>
+    <div class="row"><button class="sm" id="padReset">Réinitialiser le mappage</button></div>
+    <h3>Options</h3>
+    <div class="row"><label style="flex:1;margin:0"><input type="checkbox" id="oInv" style="width:auto"> Inverser le tangage</label><label style="flex:1;margin:0"><input type="checkbox" id="oAssist" style="width:auto"> Stabilisation auto</label></div>
+    <div class="row"><label style="margin:0">Zone morte <input type="range" id="oDead" min="0" max="0.4" step="0.01"></label><label style="margin:0">Volume <input type="range" id="oVol" min="0" max="1" step="0.05"></label></div>
+    <div class="row"><label style="margin:0">Qualité graphique<select id="oQual"><option value="low">Basse (rapide)</option><option value="med">Moyenne</option><option value="high">Haute (bloom, ombres)</option></select></label></div>
+  </div>
+</div>
+
+<div id="results" class="screen hide">
+  <div class="card wide"><h2 id="rsTitle">Résultats</h2><div id="rsBody"></div><div id="rsXp"></div>
+    <div class="row"><button id="rsGo" class="pri">Continuer</button></div></div>
+</div>
+
+<div id="pause" class="screen hide">
+  <div class="card"><h2>Menu</h2><p class="sub">La course continue pendant que tu es ici.</p>
+    <div class="row"><button id="pResume" class="pri">Reprendre</button></div>
+    <div class="row"><button id="pCtl">Réglages & commandes</button></div>
+    <div class="row"><button id="pQuit">Quitter la course</button></div></div>
+</div>
+
+<script type="module" src="/js/main.js"></script>
+</body>
+</html>
